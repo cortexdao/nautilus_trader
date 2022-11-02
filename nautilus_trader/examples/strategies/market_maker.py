@@ -16,6 +16,7 @@
 from decimal import Decimal
 from typing import Optional
 
+from nautilus_trader.config import StrategyConfig
 from nautilus_trader.core.message import Event
 from nautilus_trader.model.c_enums.order_side import OrderSide
 from nautilus_trader.model.enums import BookType
@@ -30,6 +31,23 @@ from nautilus_trader.model.orderbook.book import OrderBook
 from nautilus_trader.model.orderbook.data import OrderBookData
 from nautilus_trader.trading.strategy import Strategy
 
+class MarketMakerConfig(StrategyConfig):
+    """
+    Configuration for ``MarketMaker`` instances.
+
+    Parameters
+    ----------
+    instrument_id : InstrumentId
+        The instrument ID for the strategy.
+    trade_size : Decimal
+        The position size per trade.
+    max_size : Decimal
+        The maximum inventory size allowed.
+    """
+
+    instrument_id: str
+    trade_size: Decimal
+    max_size: Decimal    
 
 class MarketMaker(Strategy):
     """
@@ -45,18 +63,13 @@ class MarketMaker(Strategy):
         The maximum inventory size allowed.
     """
 
-    def __init__(
-        self,
-        instrument_id: InstrumentId,
-        trade_size: Decimal,
-        max_size: Decimal,
-    ):
-        super().__init__()
+    def __init__(self, config: MarketMakerConfig):
+        super().__init__(config)
 
         # Configuration
-        self.instrument_id = instrument_id
-        self.trade_size = trade_size
-        self.max_size = max_size
+        self.instrument_id = InstrumentId.from_str(config.instrument_id)
+        self.trade_size = Decimal(config.trade_size)
+        self.max_size = Decimal(config.max_size)
 
         self.instrument: Optional[Instrument] = None  # Initialized in on_start
         self._book: Optional[OrderBook] = None
@@ -65,6 +78,7 @@ class MarketMaker(Strategy):
 
     def on_start(self):
         self.instrument = self.cache.instrument(self.instrument_id)
+        print('instrument loaded')
         if self.instrument is None:
             self.log.error(f"Could not find instrument for {self.instrument_id}")
             self.stop()
@@ -72,15 +86,11 @@ class MarketMaker(Strategy):
 
         # Create orderbook
         self._book = OrderBook.create(instrument=self.instrument, book_type=BookType.L2_MBP)
-
+        print('orderbook created')
         # Subscribe to live data
         self.subscribe_order_book_deltas(self.instrument_id)
-
+        print('substribed to order book')
     def on_order_book_delta(self, delta: OrderBookData):
-        if not self._book:
-            self.log.error("No book being maintained.")
-            return
-
         self._book.apply(delta)
         bid_price = self._book.best_bid_price()
         ask_price = self._book.best_ask_price()
@@ -96,6 +106,7 @@ class MarketMaker(Strategy):
     def on_event(self, event: Event):
         if isinstance(event, (PositionOpened, PositionChanged)):
             net_qty = event.quantity.as_decimal()
+            print(f'net_qty: {net_qty}')
             if event.side == PositionSide.SHORT:
                 net_qty = -net_qty
             self._adj = (net_qty / self.max_size) * Decimal(0.01)
@@ -106,10 +117,6 @@ class MarketMaker(Strategy):
         """
         Users simple buy method (example).
         """
-        if not self.instrument:
-            self.log.error("No instrument loaded.")
-            return
-
         order = self.order_factory.limit(
             instrument_id=self.instrument_id,
             order_side=OrderSide.BUY,
@@ -123,10 +130,6 @@ class MarketMaker(Strategy):
         """
         Users simple sell method (example).
         """
-        if not self.instrument:
-            self.log.error("No instrument loaded.")
-            return
-
         order = self.order_factory.limit(
             instrument_id=self.instrument_id,
             order_side=OrderSide.SELL,
