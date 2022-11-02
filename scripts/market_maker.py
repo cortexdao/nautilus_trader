@@ -43,11 +43,17 @@ class MarketMakerConfig(StrategyConfig):
         The position size per trade.
     max_size : Decimal
         The maximum inventory size allowed.
+    bid_spread : Decimal
+        The distance between bid-price and mid-price
+    ask_spread : Decimal
+        The distance between ask-price and mid-price
     """
 
     instrument_id: str
     trade_size: Decimal
-    max_size: Decimal    
+    max_size: Decimal
+    ask_spread: Decimal
+    bid_spread: Decimal 
 
 class MarketMaker(Strategy):
     """
@@ -70,6 +76,8 @@ class MarketMaker(Strategy):
         self.instrument_id = InstrumentId.from_str(config.instrument_id)
         self.trade_size = Decimal(config.trade_size)
         self.max_size = Decimal(config.max_size)
+        self.ask_spread = Decimal(config.ask_spread)
+        self.bid_spread = Decimal(config.bid_spread)
 
         self.instrument: Optional[Instrument] = None  # Initialized in on_start
         self._book: Optional[OrderBook] = None
@@ -100,8 +108,8 @@ class MarketMaker(Strategy):
                 self.cancel_all_orders(self.instrument_id)
                 self._mid = Decimal(mid)
                 val = self._mid + self._adj
-                self.buy(price=val * Decimal(1.01))
-                self.sell(price=val * Decimal(0.99))
+                self.buy(price=val * (Decimal(1.00) + self.bid_spread))
+                self.sell(price=val * (Decimal(1.00) + self.ask_spread))
 
     def on_event(self, event: Event):
         if isinstance(event, (PositionOpened, PositionChanged)):

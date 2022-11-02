@@ -5,31 +5,21 @@ import pandas as pd
 import os, shutil
 
 
-from nautilus_trader.model.enums import BookAction
-from nautilus_trader.model.enums import BookType
-from nautilus_trader.model.orderbook.data import OrderBookDeltas
-from nautilus_trader.model.orderbook.data import Order
-from nautilus_trader.model.orderbook.data import OrderBookDelta
 from nautilus_trader.model.orderbook.data import OrderBookData
-# from nautilus_trader.model.orderbook.book import OrderBookData
 from nautilus_trader.model.identifiers import InstrumentId, Symbol, Venue
 from nautilus_trader.backtest.data.providers import TestInstrumentProvider
 from nautilus_trader.examples.strategies.market_maker import MarketMaker
-from nautilus_trader.backtest.engine import BacktestEngine
 from nautilus_trader.backtest.engine import BacktestEngineConfig
 from nautilus_trader.model.identifiers import Venue
 from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
-from nautilus_trader.model.enums import OMSType
-from nautilus_trader.model.enums import AccountType
-from nautilus_trader.model.currencies import USD, USDT, BTC, BNB
+from nautilus_trader.model.currencies import USDT, BTC, BNB
 from nautilus_trader.persistence.catalog import ParquetDataCatalog
 from nautilus_trader.backtest.node import BacktestNode, BacktestVenueConfig, BacktestDataConfig, BacktestRunConfig, BacktestEngineConfig
 from nautilus_trader.config.common import ImportableStrategyConfig, StrategyConfig
 from nautilus_trader.persistence.external.core import write_objects
 from nautilus_trader.model.instruments.currency_pair import CurrencyPair
-
 
 
 if __name__ == '__main__':
@@ -77,7 +67,7 @@ if __name__ == '__main__':
         account_type="CASH",
         book_type="L2_MBP",
         # base_currency='BTC',  # Standard single-currency account
-        starting_balances=["10000 BNB", "100000 USDT"],  # Single-currency or multi-currency accounts
+        starting_balances=["100000 BNB", "100000 USDT"],  # Single-currency or multi-currency accounts
     )
     ]
     data_config=[
@@ -94,8 +84,10 @@ if __name__ == '__main__':
         config_path=f"{strategy.__module__}:{strategy.__name__}Config",
         config=dict(
             instrument_id = str(BIN_BNBUSDT.id.value),
-            trade_size = Decimal(0.003),
+            trade_size = Decimal(0.3),
             max_size = Decimal(400_000_000),
+            bid_spread = Decimal(0.01),
+            ask_spread = Decimal(0.02),
         ),
     ),
     engine_config = BacktestEngineConfig(
