@@ -104,3 +104,14 @@ if __name__ == '__main__':
     node = BacktestNode(configs=[config])
 
     results = node.run()
+    engine = node.get_engines()[0]
+    print(f'engine list: {node.get_engines()}')
+    print(f'engine: {engine}')
+    data_dir = '/Users/andrewgoldberg/nautilus_trader/scripts'
+    engine.trader.generate_order_fills_report().to_csv(f'{data_dir}/orders.csv')
+    engine.trader.generate_positions_report().to_csv(f'{data_dir}/positions.csv')
+    print(f'bin_bnbusdt: {BIN_BNBUSDT}')
+    print(f'bin_bnbusdt.venue: {BIN_BNBUSDT.venue}')
+    print(f'bin_bnbusdt.venue.value: {BIN_BNBUSDT.venue.value}')
+    engine.trader.generate_account_report(BIN_BNBUSDT.venue).to_csv(f'{data_dir}/account.csv')
+    
