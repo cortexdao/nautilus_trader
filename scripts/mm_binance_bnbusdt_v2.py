@@ -14,7 +14,7 @@ from nautilus_trader.model.identifiers import Venue
 from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
-from nautilus_trader.model.currencies import USDT, BTC, BNB
+from nautilus_trader.model.currencies import USDT, BNB
 from nautilus_trader.persistence.catalog import ParquetDataCatalog
 from nautilus_trader.backtest.node import BacktestNode, BacktestVenueConfig, BacktestDataConfig, BacktestRunConfig, BacktestEngineConfig
 from nautilus_trader.config.common import ImportableStrategyConfig, StrategyConfig
@@ -30,8 +30,8 @@ if __name__ == '__main__':
                 venue=Venue("BINANCE"),
             ),
             native_symbol=Symbol("BNBUSDT"),
-            base_currency=USDT,
-            quote_currency=BNB,
+            base_currency=BNB,
+            quote_currency=USDT,
             price_precision=2,
             size_precision=6,
             price_increment=Price(1e-02, precision=2),
@@ -53,12 +53,17 @@ if __name__ == '__main__':
     BIN_BNBUSDT = instrument
 
     # CATALOG_PATH = os.getcwd() + "/catalog"
-    CATALOG_PATH = '/Users/andrewgoldberg/opt/anaconda3/envs/web3/lib/python3.9/site-packages/nautilus_trader/examples/catalog'
+    # BASE_CURR = 'BNB'
+    # DATA_PATH = '/Users/andrewgoldberg/nautilus_trader/data'
+    # CATALOG_PATH = os.path.join(DATA_PATH, BASE_CURR, 'catalog/')
+    CATALOG_PATH = '/Users/andrewgoldberg/nautilus_trader/data/BNB/catalog'
+    # CATALOG_PATH = '/Users/andrewgoldberg/opt/anaconda3/envs/web3/lib/python3.9/site-packages/nautilus_trader/examples/catalog'
     catalog = ParquetDataCatalog(CATALOG_PATH)
 
-    # write_objects(catalog, [BIN_BTCUSDT])
+    write_objects(catalog, [BIN_BNBUSDT])
     # print(f'catalog path: {CATALOG_PATH}')
-    print(catalog.instruments())
+    print(f'catalog.path: {catalog.path}')
+    print(f'catalog.instruments: {catalog.instruments()}')
 
     venues_config=[
     BacktestVenueConfig(
@@ -87,7 +92,7 @@ if __name__ == '__main__':
             trade_size = Decimal(0.3),
             max_size = Decimal(400_000_000),
             bid_spread = Decimal(0.01),
-            ask_spread = Decimal(0.02),
+            ask_spread = Decimal(0.01),
         ),
     ),
     engine_config = BacktestEngineConfig(

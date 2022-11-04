@@ -12,6 +12,11 @@ from nautilus_trader.persistence.catalog import ParquetDataCatalog
 from decimal import Decimal
 import os, shutil
 import pandas as pd
+from nautilus_trader.model.currencies import USDT, BNB
+from nautilus_trader.model.instruments.currency_pair import CurrencyPair
+from nautilus_trader.model.objects import Money
+from nautilus_trader.model.objects import Price
+from nautilus_trader.model.objects import Quantity
 
 def parser(data, instrument_id):
     """ Parser function for hist_data FX data, for use with CSV Reader """
@@ -50,29 +55,48 @@ def data_to_catalog(data_path, instrument_id, _catalog):
 
 
 if __name__ == '__main__':
-
-    data_file = '/Users/andrewgoldberg/Projects/hummingbot-backtest/data/l2_data_extract_discord/BINANCE-BNB-USDT-incremental_l2_book-2022-10-13-00-00-00-2022-10-14-00-00-00.csv.gz'
-    # data_df = pd.read_csv(data_file, compression='gzip', error_bad_lines=False)
-
-    CATALOG_PATH = os.getcwd() + "/catalog"
-
+    
+    # CATALOG_PATH = os.getcwd() + "/catalog"
+    BASE_CURR = 'BNB'
+    DATA_PATH = '/Users/andrewgoldberg/nautilus_trader/data'
+    CATALOG_PATH = os.path.join(DATA_PATH, BASE_CURR, 'catalog/')
     # Clear if it already exists, then create fresh
     # if os.path.exists(CATALOG_PATH):
     #     shutil.rmtree(CATALOG_PATH)
     # os.mkdir(CATALOG_PATH)
-
+    # CATALOG_PATH = '/Users/andrewgoldberg/opt/anaconda3/envs/web3/lib/python3.9/site-packages/nautilus_trader/examples/catalog'
     catalog = ParquetDataCatalog(CATALOG_PATH)
 
-    from nautilus_trader.persistence.external.core import process_files, write_objects
-    from nautilus_trader.backtest.data.providers import TestInstrumentProvider
+    data_file = '/Users/andrewgoldberg/Projects/hummingbot-backtest/data/l2_data_extract_discord/BINANCE-BNB-USDT-incremental_l2_book-2022-10-13-00-00-00-2022-10-14-00-00-00.csv.gz'
 
-    # BIN_BTCUSDT = TestInstrumentProvider.btcusdt_binance()
-    BIN_BNBUSDT = instrument
+    instrument = CurrencyPair(
+            instrument_id=InstrumentId(
+                symbol=Symbol("BNBUSDT"),
+                venue=Venue("BINANCE"),
+            ),
+            native_symbol=Symbol("BNBUSDT"),
+            base_currency=BNB,
+            quote_currency=USDT,
+            price_precision=2,
+            size_precision=6,
+            price_increment=Price(1e-02, precision=2),
+            size_increment=Quantity(1e-06, precision=6),
+            lot_size=None,
+            max_quantity=Quantity(9000, precision=6),
+            min_quantity=Quantity(1e-06, precision=6),
+            max_notional=None,
+            min_notional=Money(10.00000000, USDT),
+            max_price=Price(1000000, precision=2),
+            min_price=Price(0.01, precision=2),
+            margin_init=Decimal(0),
+            margin_maint=Decimal(0),
+            maker_fee=Decimal("0.001"),
+            taker_fee=Decimal("0.001"),
+            ts_event=0,
+            ts_init=0,
+        )
 
-    from nautilus_trader.persistence.external.core import write_objects
-
-    write_objects(catalog, [BIN_BNBUSDT])
-
+    data_to_catalog(data_file, instrument.id, catalog)
     catalog.instruments()
 
 
