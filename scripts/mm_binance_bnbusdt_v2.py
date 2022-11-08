@@ -89,7 +89,7 @@ if __name__ == '__main__':
         config_path=f"{strategy.__module__}:{strategy.__name__}Config",
         config=dict(
             instrument_id = str(BIN_BNBUSDT.id.value),
-            trade_size = Decimal(0.3),
+            trade_size = Decimal(0.03),
             max_size = Decimal(400_000_000),
             bid_spread = Decimal(0.01),
             ask_spread = Decimal(0.01),

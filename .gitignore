@@ -13,6 +13,7 @@
 *.xml
 *.key
 *.key_secret
+*.csv
 
 .benchmarks*
 .coverage*
