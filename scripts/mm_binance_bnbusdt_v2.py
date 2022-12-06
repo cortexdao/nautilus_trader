@@ -109,6 +109,7 @@ if __name__ == '__main__':
     node = BacktestNode(configs=[config])
 
     results = node.run()
+    
     engine = node.get_engines()[0]
     print(f'engine list: {node.get_engines()}')
     print(f'engine: {engine}')
